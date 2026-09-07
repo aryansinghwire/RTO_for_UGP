@@ -1,0 +1,19 @@
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# ML artifacts / large data (not suited for git)
+data/
+catboost_info/
+graph/
+serving/output/
+
+# OS
+.DS_Store
+
+# Frontend / backend (added in later phases)
+node_modules/
+frontend/dist/
+backend/*.db

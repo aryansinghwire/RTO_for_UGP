@@ -1,0 +1,11 @@
+GraphSAGE (train_test)
+============================================================
+overall: acc=0.7222  prec=0.5616  rec=0.6032  f1=0.5817  auc=0.7521  pr_auc=0.6362  (n=10,549)
+high-return customers (>=50%): acc=0.6350  prec=0.6197  rec=0.9672  f1=0.7554  auc=0.7608  pr_auc=0.8106  (n=2,460)
+customer cold-start = warm: acc=0.7565  prec=0.5616  rec=0.8039  f1=0.6613  auc=0.8432  pr_auc=0.7111  (n=8,570)
+customer cold-start = cold: acc=0.5740  prec=0.0000  rec=0.0000  f1=0.0000  auc=0.7067  pr_auc=0.6262  (n=1,979)
+product cold-start = warm: acc=0.7222  prec=0.5616  rec=0.6032  f1=0.5817  auc=0.7521  pr_auc=0.6362  (n=10,549)
+
+Best Phase 1 tabular baseline on THIS dataset: CatBoost overall auc=0.8358
+GraphSAGE overall auc=0.7521  (-0.0837 vs best baseline)
+GraphSAGE did not beat the tabular baseline's OVERALL auc on this run.
