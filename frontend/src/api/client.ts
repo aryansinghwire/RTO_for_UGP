@@ -18,7 +18,8 @@ export class ApiError extends Error {
 
 export interface RequestContext {
   role: Role;
-  tenant: string | null; // tenant slug, or null for "all tenants"
+  tenant: string | null; // tenant slug being *viewed*, or null for "all tenants"
+  actorTenant: string | null; // tenant the caller *belongs to* (X-Actor-Tenant)
 }
 
 function buildQuery(params: Record<string, unknown> | undefined, tenant: string | null): string {
@@ -46,6 +47,10 @@ async function request<T>(
     method,
     headers: {
       "X-Role": ctx.role,
+      // Stands in for the tenant claim a real session/JWT would carry. The
+      // backend compares it against the tenant each request addresses, so a
+      // Tenant Admin can't configure someone else's tenant.
+      ...(ctx.actorTenant ? { "X-Actor-Tenant": ctx.actorTenant } : {}),
       ...(options.body !== undefined ? { "Content-Type": "application/json" } : {}),
     },
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,

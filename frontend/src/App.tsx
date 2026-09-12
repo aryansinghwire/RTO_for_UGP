@@ -3,7 +3,6 @@ import NavSidebar from "./components/NavSidebar";
 import PrototypeBanner from "./components/PrototypeBanner";
 import QueuePage from "./pages/QueuePage";
 import OrderDetailPage from "./pages/OrderDetailPage";
-import ReportingPage from "./pages/ReportingPage";
 import AlertsPage from "./pages/AlertsPage";
 import AdminPage from "./pages/AdminPage";
 
@@ -19,7 +18,10 @@ export default function App() {
               <Route path="/" element={<Navigate to="/queue" replace />} />
               <Route path="/queue" element={<QueuePage />} />
               <Route path="/orders/:orderId" element={<OrderDetailPage />} />
-              <Route path="/reporting" element={<ReportingPage />} />
+              {/* Reporting is disabled. The page component and the
+                  /api/reporting endpoints are left in place so it can be
+                  switched back on by restoring this route and its nav link. */}
+              <Route path="/reporting" element={<Navigate to="/queue" replace />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/admin" element={<AdminPage />} />
             </Routes>

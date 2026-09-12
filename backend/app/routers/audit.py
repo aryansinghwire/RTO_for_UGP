@@ -24,7 +24,7 @@ def get_audit_log(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=50, ge=1, le=200),
     db: Session = Depends(get_db),
-    role: str = Depends(require_role("ops_manager")),
+    role: str = Depends(require_role("tenant_admin")),
 ):
     if actor_role is not None and actor_role not in ROLE_LEVELS:
         raise HTTPException(status_code=422, detail=f"actor_role must be one of {list(ROLE_LEVELS)}")

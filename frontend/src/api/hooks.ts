@@ -26,8 +26,8 @@ import type {
 } from "./types";
 
 function useCtx(): RequestContext {
-  const { role, tenant } = useApp();
-  return { role, tenant };
+  const { role, tenant, actorTenant } = useApp();
+  return { role, tenant, actorTenant };
 }
 
 // --- meta / tenants / roles ---
@@ -165,7 +165,9 @@ export function useAlerts(params: { min_gap?: number; min_n?: number } = {}) {
 export function useRules() {
   const ctx = useCtx();
   return useQuery({
-    queryKey: ["rules", ctx.role, ctx.tenant],
+    // actorTenant is in the key because the backend filters rules by it -
+    // switching which tenant you're signed in as must not reuse a cached list
+    queryKey: ["rules", ctx.role, ctx.tenant, ctx.actorTenant],
     queryFn: () => api.get<RuleOut[]>("/rules", ctx),
   });
 }

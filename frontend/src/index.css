@@ -12,3 +12,63 @@ body {
   margin: 0;
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
 }
+
+/* Dual-thumb range window (components/ScoreRangeSlider.tsx). The two inputs
+   sit on top of each other, so each one's track must be invisible and
+   click-through - only the thumbs may receive pointer events, or the upper
+   input would swallow every drag aimed at the lower one. */
+.range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+}
+
+.range-thumb:focus {
+  outline: none;
+}
+
+.range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  height: 1.05rem;
+  width: 1.05rem;
+  border-radius: 9999px;
+  border: 2px solid #0d9488;
+  background: #ffffff;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+
+.range-thumb::-moz-range-thumb {
+  pointer-events: auto;
+  height: 1.05rem;
+  width: 1.05rem;
+  border-radius: 9999px;
+  border: 2px solid #0d9488;
+  background: #ffffff;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+
+.range-thumb:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
+}
+
+.range-thumb:focus-visible::-moz-range-thumb {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .range-thumb::-webkit-slider-thumb {
+    border-color: #2dd4bf;
+    background: #171717;
+  }
+  .range-thumb::-moz-range-thumb {
+    border-color: #2dd4bf;
+    background: #171717;
+  }
+}

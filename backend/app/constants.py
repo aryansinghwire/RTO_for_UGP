@@ -19,12 +19,12 @@ ROLES = {
         "label": "Ops Analyst",
         "description": "Reviews the risk queue, drills into orders, applies manual overrides and logs interventions.",
     },
-    "ops_manager": {
-        "label": "Ops Manager / Brand Admin",
-        "description": "Everything an Ops Analyst can do, plus configuring automated rules, viewing reporting/alerts, and the audit log.",
+    "tenant_admin": {
+        "label": "Tenant Admin",
+        "description": "Everything an Ops Analyst can do, for their own tenant only: configuring that tenant's automated score windows, alerts, and audit log.",
     },
     "admin": {
-        "label": "Support / Admin",
-        "description": "Everything an Ops Manager can do, plus onboarding new tenants.",
+        "label": "Platform Admin (Support)",
+        "description": "Cross-tenant. Everything a Tenant Admin can do for any tenant, plus onboarding new tenants.",
     },
 }

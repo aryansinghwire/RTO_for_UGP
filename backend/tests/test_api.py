@@ -84,20 +84,81 @@ def test_override_writes_both_tables():
     assert any(e["event_type"] == "override" and e["new_score"] == 0.1 for e in events)
 
 
+RULE_BODY = {"name": "r1", "score_min": 0.7, "score_max": 0.95, "action_type": "call_customer"}
+TENANT_ADMIN = {"X-Role": "tenant_admin", "X-Actor-Tenant": "test-tenant"}
+
+
 def test_role_gate_403_then_201():
     denied = client.post(
         "/api/rules?tenant=test-tenant",
-        json={"name": "r1", "score_threshold": 0.9, "action_type": "call_customer"},
-        headers={"X-Role": "ops_analyst"},
+        json=RULE_BODY,
+        headers={"X-Role": "ops_analyst", "X-Actor-Tenant": "test-tenant"},
     )
     assert denied.status_code == 403
 
-    allowed = client.post(
-        "/api/rules?tenant=test-tenant",
-        json={"name": "r1", "score_threshold": 0.9, "action_type": "call_customer"},
-        headers={"X-Role": "ops_manager"},
-    )
+    allowed = client.post("/api/rules?tenant=test-tenant", json=RULE_BODY, headers=TENANT_ADMIN)
     assert allowed.status_code == 201
+    body = allowed.json()
+    assert body["score_min"] == 0.7
+    assert body["score_max"] == 0.95
+
+
+def test_tenant_admin_cannot_write_another_tenants_rules():
+    """The whole point of the tenant_admin role: configuration is per-tenant."""
+    db = SessionLocal()
+    if db.query(Tenant).filter(Tenant.slug == "other-tenant").first() is None:
+        db.add(Tenant(name="Other Tenant", slug="other-tenant"))
+        db.commit()
+    db.close()
+
+    r = client.post(
+        "/api/rules?tenant=other-tenant",
+        json=RULE_BODY,
+        headers={"X-Role": "tenant_admin", "X-Actor-Tenant": "test-tenant"},
+    )
+    assert r.status_code == 403
+
+    # the cross-tenant platform admin is the one role that may
+    r = client.post("/api/rules?tenant=other-tenant", json=RULE_BODY, headers={"X-Role": "admin"})
+    assert r.status_code == 201
+
+
+def test_tenant_admin_only_lists_own_rules():
+    r = client.get("/api/rules", headers=TENANT_ADMIN)
+    assert r.status_code == 200
+    assert {row["tenant_slug"] for row in r.json()} == {"test-tenant"}
+
+    r = client.get("/api/rules", headers={"X-Role": "admin"})
+    assert {"test-tenant", "other-tenant"} <= {row["tenant_slug"] for row in r.json()}
+
+
+def test_rule_window_must_be_ordered():
+    r = client.post(
+        "/api/rules?tenant=test-tenant",
+        json={"name": "bad", "score_min": 0.9, "score_max": 0.2, "action_type": "call_customer"},
+        headers=TENANT_ADMIN,
+    )
+    assert r.status_code == 422
+
+
+def test_rule_sweep_respects_the_window():
+    """The seeded order scores 0.9. A window that sits entirely below it must
+    not fire - that's the difference between a window and a floor."""
+    created = client.post(
+        "/api/rules?tenant=test-tenant",
+        json={"name": "low band", "score_min": 0.1, "score_max": 0.3,
+              "action_type": "send_reminder_email"},
+        headers=TENANT_ADMIN,
+    ).json()
+
+    # deactivate every other rule so only the low band is evaluated
+    for rule in client.get("/api/rules", headers=TENANT_ADMIN).json():
+        if rule["id"] != created["id"]:
+            client.patch(f"/api/rules/{rule['id']}", json={"is_active": False}, headers=TENANT_ADMIN)
+
+    swept = client.post("/api/rules/evaluate?tenant=test-tenant", headers=TENANT_ADMIN)
+    assert swept.status_code == 200
+    assert swept.json()["actions_created"] == 0
 
 
 def test_unknown_role_403():

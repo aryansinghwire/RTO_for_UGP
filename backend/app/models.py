@@ -113,12 +113,22 @@ class InterventionLog(Base):
 
 
 class AutomatedRule(Base):
+    """A per-tenant automated action, configured over a *score window* rather
+    than a single floor: the rule fires on orders whose current score falls in
+    [score_min, score_max]. A window lets a tenant route mid-band orders to a
+    cheap action (reminder email) and top-band orders to an expensive one
+    (call the customer) without the two rules overlapping.
+
+    Rules are tenant-scoped and a Tenant Admin may only touch their own
+    tenant's - see deps.require_tenant_scope.
+    """
     __tablename__ = "automated_rules"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
     name = Column(String, nullable=False)
-    score_threshold = Column(Float, nullable=False)
+    score_min = Column(Float, nullable=False)
+    score_max = Column(Float, nullable=False)
     action_type = Column(String, nullable=False)
     is_active = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime, default=utcnow)

@@ -15,7 +15,10 @@ from .config import DEFAULT_ROLE, ROLE_LEVELS
 from .db import get_db
 from .models import Tenant
 
-__all__ = ["get_db", "get_role", "require_role", "get_tenant_or_none", "get_tenant_or_404"]
+__all__ = [
+    "get_db", "get_role", "require_role", "get_tenant_or_none", "get_tenant_or_404",
+    "get_actor_tenant", "require_tenant_scope",
+]
 
 
 def get_role(x_role: str = Header(default=DEFAULT_ROLE, alias="X-Role")) -> str:
@@ -61,3 +64,46 @@ def get_tenant_or_404(
     if row is None:
         raise HTTPException(status_code=404, detail=f"unknown tenant '{tenant}'")
     return row
+
+
+def get_actor_tenant(
+    x_actor_tenant: Optional[str] = Header(default=None, alias="X-Actor-Tenant"),
+) -> Optional[str]:
+    """The tenant the caller *belongs to*, as opposed to the `?tenant=` they're
+    asking about.
+
+    In a real deployment this would come off the authenticated session/JWT. The
+    prototype has no auth, so the frontend states it in a header - which means
+    it is a simulation of tenant isolation, not a security boundary. It still
+    exercises the real code path: every scoped endpoint compares this against
+    the tenant being addressed.
+    """
+    return x_actor_tenant
+
+
+def require_tenant_scope(
+    tenant: Tenant = Depends(get_tenant_or_404),
+    role: str = Depends(get_role),
+    actor_tenant: Optional[str] = Depends(get_actor_tenant),
+) -> Tenant:
+    """Resolve the addressed tenant and confirm the caller may act on it.
+
+    'admin' is the cross-tenant platform role and passes through. Every other
+    role is pinned to its own tenant: a Tenant Admin at Aurora Apparel cannot
+    read or change Nimbus Fashion Co.'s configuration.
+    """
+    if role == "admin":
+        return tenant
+    if actor_tenant is None:
+        raise HTTPException(
+            status_code=403,
+            detail=(f"role '{role}' is tenant-scoped - the request must identify "
+                    f"the caller's own tenant via the X-Actor-Tenant header"),
+        )
+    if actor_tenant != tenant.slug:
+        raise HTTPException(
+            status_code=403,
+            detail=(f"role '{role}' is scoped to tenant '{actor_tenant}' and cannot "
+                    f"act on tenant '{tenant.slug}'"),
+        )
+    return tenant

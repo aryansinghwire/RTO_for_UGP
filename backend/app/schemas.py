@@ -139,21 +139,25 @@ class RuleOut(BaseModel):
 
     id: int
     tenant: str
+    tenant_slug: str
     name: str
-    score_threshold: float
+    score_min: float
+    score_max: float
     action_type: str
     is_active: bool
 
 
 class RuleCreate(BaseModel):
     name: str
-    score_threshold: float
+    score_min: float
+    score_max: float
     action_type: str
 
 
 class RuleUpdate(BaseModel):
     is_active: Optional[bool] = None
-    score_threshold: Optional[float] = None
+    score_min: Optional[float] = None
+    score_max: Optional[float] = None
     action_type: Optional[str] = None
 
 

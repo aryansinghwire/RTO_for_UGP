@@ -26,7 +26,8 @@ def evaluate_rules(db: Session, tenant_id: int) -> dict:
             .filter(
                 Order.tenant_id == tenant_id,
                 OrderStatus.status == "pending",
-                OrderStatus.current_score >= rule.score_threshold,
+                OrderStatus.current_score >= rule.score_min,
+                OrderStatus.current_score <= rule.score_max,
             )
             .all()
         )
@@ -53,7 +54,8 @@ def evaluate_rules(db: Session, tenant_id: int) -> dict:
                 trigger="automated_threshold",
                 outcome="pending",
                 note=(f"Automated: rule '{rule.name}' fired "
-                      f"(score {status.current_score:.3f} >= threshold {rule.score_threshold:.3f})"),
+                      f"(score {status.current_score:.3f} is inside the configured "
+                      f"window {rule.score_min:.2f}-{rule.score_max:.2f})"),
                 actor_role="admin",
                 actor_name="system (automated rule)",
             ))

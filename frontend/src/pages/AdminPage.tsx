@@ -55,22 +55,50 @@ function TenantSection() {
   );
 }
 
+/** States plainly which tenant's configuration the current role is allowed to
+ *  touch, so the page never looks like it is editing settings globally. */
+function ScopeNotice() {
+  const { role, actorTenant } = useApp();
+  const { data: tenants } = useTenants();
+
+  if (role === "admin") {
+    return (
+      <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+        <strong>Platform Admin.</strong> You are working across all tenants — the tenant selector at
+        the top-left decides whose configuration you are editing.
+      </p>
+    );
+  }
+
+  const name = tenants?.find((t) => t.slug === actorTenant)?.name ?? actorTenant;
+  return (
+    <p className="rounded border border-teal-200 bg-teal-50 px-3 py-2 text-xs text-teal-900 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-200">
+      <strong>Tenant Admin{name ? ` — ${name}` : ""}.</strong> Score windows are configured per tenant.
+      You can only see and change your own; other tenants' settings are not reachable from this account.
+    </p>
+  );
+}
+
 export default function AdminPage() {
   const { role } = useApp();
-  const canManage = role === "ops_manager" || role === "admin";
+  const canManage = role === "tenant_admin" || role === "admin";
 
   return (
     <div className="space-y-8 p-4">
       <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Admin</h2>
 
+      <ScopeNotice />
+
       <TenantSection />
 
       <section className="space-y-3">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Automated rules</h3>
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+          Automated score windows
+        </h3>
         {canManage ? (
           <RulesForm />
         ) : (
-          <p className="text-xs text-neutral-400">Managing rules requires Ops Manager or Admin.</p>
+          <p className="text-xs text-neutral-400">Managing score windows requires Tenant Admin or Platform Admin.</p>
         )}
       </section>
 
@@ -79,7 +107,7 @@ export default function AdminPage() {
         {canManage ? (
           <AuditLogTable />
         ) : (
-          <p className="text-xs text-neutral-400">Viewing the audit log requires Ops Manager or Admin.</p>
+          <p className="text-xs text-neutral-400">Viewing the audit log requires Tenant Admin or Platform Admin.</p>
         )}
       </section>
     </div>

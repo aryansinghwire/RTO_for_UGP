@@ -15,10 +15,12 @@ CORS_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 
-# role hierarchy - a role at a given level can also do anything a lower level can
+# role hierarchy - a role at a given level can also do anything a lower level can.
+# "tenant_admin" is scoped to a single tenant (see deps.require_tenant_scope);
+# "admin" is the cross-tenant platform/support role.
 ROLE_LEVELS = {
     "ops_analyst": 1,
-    "ops_manager": 2,
+    "tenant_admin": 2,
     "admin": 3,
 }
 DEFAULT_ROLE = "ops_analyst"

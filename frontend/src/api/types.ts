@@ -1,12 +1,15 @@
 // Mirrors backend/app/schemas.py and backend/app/constants.py exactly.
 
-export type Role = "ops_analyst" | "ops_manager" | "admin";
+export type Role = "ops_analyst" | "tenant_admin" | "admin";
 
 export const ROLE_LEVELS: Record<Role, number> = {
   ops_analyst: 1,
-  ops_manager: 2,
+  tenant_admin: 2,
   admin: 3,
 };
+
+/** Roles pinned to a single tenant. Only "admin" works across tenants. */
+export const TENANT_SCOPED_ROLES: Role[] = ["ops_analyst", "tenant_admin"];
 
 export interface RoleInfo {
   role: Role;
@@ -163,21 +166,25 @@ export interface AlertOut {
 export interface RuleOut {
   id: number;
   tenant: string;
+  tenant_slug: string;
   name: string;
-  score_threshold: number;
+  score_min: number;
+  score_max: number;
   action_type: ActionType;
   is_active: boolean;
 }
 
 export interface RuleCreate {
   name: string;
-  score_threshold: number;
+  score_min: number;
+  score_max: number;
   action_type: ActionType;
 }
 
 export interface RuleUpdate {
   is_active?: boolean;
-  score_threshold?: number;
+  score_min?: number;
+  score_max?: number;
   action_type?: ActionType;
 }
 

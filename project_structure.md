@@ -39,8 +39,10 @@ RTO_for_UGP/
 │       ├── api/                client.ts, hooks.ts, types.ts
 │       ├── context/            AppContext.tsx (role / tenant / actor name)
 │       ├── components/         queue table, filters, score badge, override + action
-│       │                       forms, history timeline, chart, alerts, rules, audit
-│       └── pages/              Queue, OrderDetail, Reporting, Alerts, Admin
+│       │                       forms, history timeline, score-window slider,
+│       │                       alerts, rules, audit
+│       └── pages/              Queue, OrderDetail, Alerts, Admin
+│                               (ReportingPage is present but its route is disabled)
 │
 ├── data/                       (gitignored — ~1.5 GB)
 │   ├── *.p                     raw ASOS tables (event / customer / product × train / test)

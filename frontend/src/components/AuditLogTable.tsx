@@ -44,8 +44,8 @@ export default function AuditLogTable() {
         >
           <option value="">Any actor role</option>
           <option value="ops_analyst">Ops Analyst</option>
-          <option value="ops_manager">Ops Manager</option>
-          <option value="admin">Admin</option>
+          <option value="tenant_admin">Tenant Admin</option>
+          <option value="admin">Platform Admin</option>
         </select>
       </div>
 
